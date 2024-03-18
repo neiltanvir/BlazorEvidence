@@ -1,0 +1,67 @@
+﻿@page "/students"
+@inject HttpClient http
+@inject IJSRuntime jsRuntime
+@inject NavigationManager manager
+<h2>Student List</h2>
+<div class="form-group">
+    <a class="btn btn-success" href="students/create">Create New Student</a>
+</div>
+@if (students == null)
+{
+    <div>
+       <span>Loading...</span>
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Image</th>
+                <th>Admission Date</th>
+                <th>Active</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in students)
+            {
+                <tr>
+                    <td>@student.Id</td>
+                    <td>@student.Name</td>
+                    <td><img height="50" width="50" src="@student.ImageUrl"></td>
+                    <td>@student.AdmissionDate.ToShortDateString()</td>
+                    <td>@student.IsActive</td>
+                    <td>
+                        <a class="btn btn-dark" href="students/edit/@student.Id">Edit</a>|
+                        <button class="btn btn-danger"
+                                @onclick="async () => await Delete(student)">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    List<Student> students { get; set; }
+    protected async override Task OnInitializedAsync()
+    {
+        students = await http.GetFromJsonAsync<List<Student>>("api/students");
+    }
+    private async Task Delete(Student student)
+    {
+        var response = await http.DeleteAsync($"api/students/{student.Id}");
+        if (response.IsSuccessStatusCode)
+        {
+           students.Remove(student);
+        }
+        else
+        {
+
+        }
+    }
+}
